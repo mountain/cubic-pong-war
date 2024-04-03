@@ -200,8 +200,8 @@
                         updatedDy = -updatedDy;
                     }
 
-                    updatedDx += randomNum(-0.15, 0.15);
-                    updatedDy += randomNum(-0.15, 0.15);
+                    //updatedDx += randomNum(-0.15, 0.15);
+                    //updatedDy += randomNum(-0.15, 0.15);
                 }
             }
         }
@@ -283,9 +283,17 @@
             ball.x += ball.dx;
             ball.y += ball.dy;
 
-            // Check for wall collisions
-            if (ball.x <= 0 || ball.x >= canvas.width) ball.dx *= -1;
-            if (ball.y <= 0 || ball.y >= canvas.height) ball.dy *= -1;
+            // Correct position to ensure the ball remains within boundaries
+            ball.x = Math.max(squareSize / 2, Math.min(canvas.width - squareSize / 2, ball.x));
+            ball.y = Math.max(squareSize / 2, Math.min(canvas.height - squareSize / 2, ball.y));
+
+            // Check for wall collisions, adjusted for ball radius
+            if (ball.x - squareSize / 2 <= 0 || ball.x + squareSize / 2 >= canvas.width) {
+                ball.dx *= -1;
+            }
+            if (ball.y - squareSize / 2 <= 0 || ball.y + squareSize / 2 >= canvas.height) {
+                ball.dy *= -1;
+            }
 
             // Check for collisions with other balls
             for (let i = 0; i < balls.length; i++) {
@@ -304,12 +312,20 @@
 
     document.addEventListener('keydown', (event) => {
         const moveSpeed = 8; // Adjusted for smoother gameplay
-        if (event.key === "ArrowUp") {
-            dy1 = -moveSpeed; // Move up
-        } else if (event.key === "ArrowDown") {
-            dy1 = moveSpeed; // Move down
+        const controlledBall = balls.find(ball => ball.controlled); // Find the player-controlled ball
+        if (!controlledBall) return; // Exit if no controlled ball is found
+
+        switch(event.key) {
+            case "ArrowUp":
+                controlledBall.dy = -moveSpeed; // Move up
+                break;
+            case "ArrowDown":
+                controlledBall.dy = moveSpeed; // Move down
+                break;
+            // Consider adding ArrowLeft and ArrowRight for full movement control
         }
     });
+
 
 </script>
 </html>

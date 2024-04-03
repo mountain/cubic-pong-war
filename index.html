@@ -89,6 +89,8 @@
     const ctx = canvas.getContext("2d");
     const scoreElement = document.getElementById("score");
 
+    const BALLS_PER_TEAM = 10;
+
     const TEAM1 = colorPalette.MysticMint;
     const TEAM1_BALL = colorPalette.NocturnalExpedition;
 
@@ -107,20 +109,15 @@
         }
     }
 
-    let balls = [
-        // Balls for TEAM1
-        {x: canvas.width / 4 * 1, y: canvas.height / 6 * 1, dx: 8, dy: 8, color: TEAM1_BALL, controlled: true}, // Player-controlled ball
-        {x: canvas.width / 4 * 1, y: canvas.height / 6 * 2, dx: 5, dy: 5, color: TEAM1_BALL, controlled: false},
-        {x: canvas.width / 4 * 1, y: canvas.height / 6 * 3, dx: 5, dy: 5, color: TEAM1_BALL, controlled: false},
-        {x: canvas.width / 4 * 1, y: canvas.height / 6 * 4, dx: 5, dy: 5, color: TEAM1_BALL, controlled: false},
-        {x: canvas.width / 4 * 1, y: canvas.height / 6 * 5, dx: 5, dy: 5, color: TEAM1_BALL, controlled: false},
-        // Balls for TEAM2 (assuming automated movement for simplicity)
-        {x: canvas.width / 4 * 3, y: canvas.height / 6 * 1, dx: -8, dy: -8, color: TEAM2_BALL, controlled: false},
-        {x: canvas.width / 4 * 3, y: canvas.height / 6 * 2, dx: -5, dy: -5, color: TEAM2_BALL, controlled: false},
-        {x: canvas.width / 4 * 3, y: canvas.height / 6 * 3, dx: -5, dy: -5, color: TEAM2_BALL, controlled: false},
-        {x: canvas.width / 4 * 3, y: canvas.height / 6 * 4, dx: -5, dy: -5, color: TEAM2_BALL, controlled: false},
-        {x: canvas.width / 4 * 3, y: canvas.height / 6 * 5, dx: -5, dy: -5, color: TEAM2_BALL, controlled: false},
-    ];
+    function randomNum(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+
+    let balls = [];
+    for (let i = 0; i < BALLS_PER_TEAM; i++) {
+        balls.push({x: canvas.width / 4 * 1, y: canvas.height / (BALLS_PER_TEAM + 1) * i, dx: 5, dy: 5, color: TEAM1_BALL, controlled: false});
+        balls.push({x: canvas.width / 4 * 3, y: canvas.height / (BALLS_PER_TEAM + 1) * i, dx: -5, dy: -5, color: TEAM2_BALL, controlled: false});
+    }
 
     function checkCollision(ball1, ball2) {
         const dx = ball1.x - ball2.x;
@@ -171,10 +168,6 @@
                 ctx.fillRect(i * squareSize, j * squareSize, squareSize, squareSize);
             }
         }
-    }
-
-    function randomNum(min, max) {
-        return Math.random() * (max - min) + min;
     }
 
     function updateSquareAndBounce(x, y, dx, dy, color) {

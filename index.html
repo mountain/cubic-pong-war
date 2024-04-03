@@ -109,13 +109,17 @@
 
     let balls = [
         // Balls for TEAM1
-        {x: canvas.width / 4 * 1, y: canvas.height / 4 * 1, dx: 8, dy: 8, color: TEAM1_BALL, controlled: true}, // Player-controlled ball
-        {x: canvas.width / 4 * 1, y: canvas.height / 4 * 2, dx: 5, dy: 5, color: TEAM1_BALL, controlled: false},
-        {x: canvas.width / 4 * 1, y: canvas.height / 4 * 3, dx: 5, dy: 5, color: TEAM1_BALL, controlled: false},
+        {x: canvas.width / 4 * 1, y: canvas.height / 6 * 1, dx: 8, dy: 8, color: TEAM1_BALL, controlled: true}, // Player-controlled ball
+        {x: canvas.width / 4 * 1, y: canvas.height / 6 * 2, dx: 5, dy: 5, color: TEAM1_BALL, controlled: false},
+        {x: canvas.width / 4 * 1, y: canvas.height / 6 * 3, dx: 5, dy: 5, color: TEAM1_BALL, controlled: false},
+        {x: canvas.width / 4 * 1, y: canvas.height / 6 * 4, dx: 5, dy: 5, color: TEAM1_BALL, controlled: false},
+        {x: canvas.width / 4 * 1, y: canvas.height / 6 * 5, dx: 5, dy: 5, color: TEAM1_BALL, controlled: false},
         // Balls for TEAM2 (assuming automated movement for simplicity)
-        {x: canvas.width / 4 * 3, y: canvas.height / 4 * 1, dx: -8, dy: -8, color: TEAM2_BALL, controlled: false},
-        {x: canvas.width / 4 * 3, y: canvas.height / 4 * 2, dx: -5, dy: -5, color: TEAM2_BALL, controlled: false},
-        {x: canvas.width / 4 * 3, y: canvas.height / 4 * 3, dx: -5, dy: -5, color: TEAM2_BALL, controlled: false},
+        {x: canvas.width / 4 * 3, y: canvas.height / 6 * 1, dx: -8, dy: -8, color: TEAM2_BALL, controlled: false},
+        {x: canvas.width / 4 * 3, y: canvas.height / 6 * 2, dx: -5, dy: -5, color: TEAM2_BALL, controlled: false},
+        {x: canvas.width / 4 * 3, y: canvas.height / 6 * 3, dx: -5, dy: -5, color: TEAM2_BALL, controlled: false},
+        {x: canvas.width / 4 * 3, y: canvas.height / 6 * 4, dx: -5, dy: -5, color: TEAM2_BALL, controlled: false},
+        {x: canvas.width / 4 * 3, y: canvas.height / 6 * 5, dx: -5, dy: -5, color: TEAM2_BALL, controlled: false},
     ];
 
     function checkCollision(ball1, ball2) {
@@ -221,6 +225,53 @@
         scoreElement.textContent = `day ${team1Score} | night ${team2Score}`;
     }
 
+    function resolveCollision(ball1, ball2) {
+        const xVelocityDiff = ball1.dx - ball2.dx;
+        const yVelocityDiff = ball1.dy - ball2.dy;
+
+        const xDist = ball2.x - ball1.x;
+        const yDist = ball2.y - ball1.y;
+
+        // Prevent accidental overlap of balls
+        if (xVelocityDiff * xDist + yVelocityDiff * yDist >= 0) {
+
+            // Angle between the two colliding balls
+            const angle = -Math.atan2(ball2.y - ball1.y, ball2.x - ball1.x);
+
+            // Mass is same for both balls, so we use 1 for simplification
+            const m1 = 1;
+            const m2 = 1;
+
+            // Velocity before equation
+            const u1 = rotate({x: ball1.dx, y: ball1.dy}, angle);
+            const u2 = rotate({x: ball2.dx, y: ball2.dy}, angle);
+
+            // Velocity after 1d collision equation
+            const v1 = { x: u2.x, y: u1.y };
+            const v2 = { x: u1.x, y: u2.y };
+
+            // Final velocity after rotating axis back to original location
+            const vFinal1 = rotate(v1, -angle);
+            const vFinal2 = rotate(v2, -angle);
+
+            // Swap particle velocities for realistic bounce effect
+            ball1.dx = vFinal1.x;
+            ball1.dy = vFinal1.y;
+
+            ball2.dx = vFinal2.x;
+            ball2.dy = vFinal2.y;
+        }
+    }
+
+    function rotate(velocity, angle) {
+        const rotatedVelocities = {
+            x: velocity.x * Math.cos(angle) - velocity.y * Math.sin(angle),
+            y: velocity.x * Math.sin(angle) + velocity.y * Math.cos(angle)
+        };
+
+        return rotatedVelocities;
+    }
+
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawSquares();
@@ -240,13 +291,7 @@
             for (let i = 0; i < balls.length; i++) {
                 if (i !== index) { // Don't check a ball against itself
                     if (checkCollision(ball, balls[i])) {
-                        // Simple collision response by swapping velocities
-                        let tempDx = ball.dx;
-                        let tempDy = ball.dy;
-                        ball.dx = balls[i].dx;
-                        ball.dy = balls[i].dy;
-                        balls[i].dx = tempDx;
-                        balls[i].dy = tempDy;
+                        resolveCollision(ball, balls[i]);
                     }
                 }
             }
